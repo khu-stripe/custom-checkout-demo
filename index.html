@@ -1010,7 +1010,9 @@
         const currencySelector = checkout.createCurrencySelectorElement();
         currencySelector.mount("#currency-selector-element");
 
-        const paymentElement = checkout.createPaymentElement();
+        const paymentElement = checkout.createPaymentElement({
+          fields: { billingDetails: { name: "auto" } },
+        });
         paymentElement.mount("#payment-element");
 
         const taxIdElement = checkout.createTaxIdElement({
