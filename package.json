@@ -1,0 +1,14 @@
+{
+  "name": "mindvalley-checkout-demo",
+  "version": "1.0.0",
+  "description": "Mindvalley Checkout Session demo with adaptive pricing and automatic tax",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "stripe": "^17.7.0",
+    "dotenv": "^16.4.0"
+  }
+}
