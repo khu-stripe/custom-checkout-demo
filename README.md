@@ -3,10 +3,10 @@
 A subscription checkout page with three integration modes that users can toggle in Phase 1:
 
 1. **Custom Checkout (Elements)** -- Compose individual Stripe Elements (Payment Element, Express Checkout, Currency Selector, Tax ID) for maximum control over layout
-2. **Elements + Customer Lookup** -- Same as Elements, but looks up existing Stripe customers by email and attaches them mid-checkout via `runServerUpdate`, loading saved payment methods and prefilling the name field
-3. **Checkout Form** -- A single Stripe iframe that handles the entire checkout end-to-end (payments, billing, tax, express wallets)
+2. **Elements + Customer Lookup** -- Same as Elements, but looks up existing Stripe customers by email and attaches them mid-checkout via `runServerUpdate`, loading saved payment methods and prefilling the name field. The email field is disabled after a customer is attached.
+3. **Checkout Form + Customer Lookup** -- End-to-end checkout in a single Stripe iframe with an email lookup field above the form. Looks up existing customers by email, attaches them mid-checkout to load saved payment methods, and prefills the name. The email field is disabled after attachment.
 
-All three modes use the same product (Luminary Membership, $299/mo subscription) with adaptive pricing, automatic tax, and tax ID collection.
+All three modes use the same product (Luminary Membership, $299/mo subscription) with adaptive pricing, automatic tax, and tax ID collection. Both lookup modes share the same popup confirmation flow and reuse the `/lookup-customer` and `/update-checkout-customer` endpoints.
 
 **Live demo**: https://checkout-demo-silk.vercel.app
 
@@ -35,11 +35,11 @@ Session created with `ui_mode: "custom"` (clover API version).
 
 Uses the same Elements setup as above, plus client-side email lookup on blur. When an existing Stripe Customer is found, a confirmation popup appears. On confirmation, `actions.runServerUpdate()` calls the server to attach the customer to the checkout session. The customer's name is prefilled automatically if available. See [Update the customer during checkout](https://docs.stripe.com/payments/checkout/update-customer).
 
-### Integration Mode: Checkout Form
+### Integration Mode: Checkout Form + Customer Lookup
 
 Session created with `ui_mode: "form"` and API version `2026-04-22.preview; custom_checkout_payment_form_preview=v1`.
 
-The Checkout Form renders a complete checkout experience in a single iframe, handling payment details, billing address, tax ID, express wallets, and confirmation. See [Checkout Form docs](https://docs.stripe.com/payments/checkout/how-checkout-works?payment-ui=checkout-form).
+The Checkout Form renders a complete checkout experience in a single iframe, handling payment details, billing address, tax ID, express wallets, and confirmation. An email input and a full name input sit above the form. On email blur, the same customer lookup and popup flow is triggered. After a customer is attached, the email field is disabled and the name is prefilled. See [Checkout Form docs](https://docs.stripe.com/payments/checkout/how-checkout-works?payment-ui=checkout-form) and [Update the customer during checkout](https://docs.stripe.com/payments/checkout/update-customer).
 
 ## Project structure
 
