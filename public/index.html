@@ -1074,6 +1074,15 @@
               </span>
               <span class="mode-badge new">New</span>
             </label>
+            <label class="mode-option" data-mode="form-lookup">
+              <input type="radio" name="integration-mode" value="form-lookup">
+              <span class="mode-radio"></span>
+              <span class="mode-info">
+                <span class="mode-title">Checkout Form + Customer Lookup</span>
+                <span class="mode-desc">Same as Checkout Form, but looks up existing Stripe customers by email before checkout and attaches saved payment methods</span>
+              </span>
+              <span class="mode-badge new">New</span>
+            </label>
           </div>
 
           <button class="btn-primary" id="start-checkout-btn">
@@ -1175,9 +1184,20 @@
       <div class="checkout-form-layout">
         <div class="checkout-form-main animate-in">
           <div class="checkout-form-header">
-            <h2 class="section-title">Checkout Form</h2>
-            <p>Complete checkout powered by a single Stripe form element with built-in payments, billing, shipping, tax, and express wallets.</p>
+            <h2 class="section-title" id="form-phase-title">Checkout Form</h2>
+            <p id="form-phase-desc">Complete checkout powered by a single Stripe form element with built-in payments, billing, shipping, tax, and express wallets.</p>
           </div>
+
+          <div id="form-lookup-section" style="display: none;">
+            <div class="form-group">
+              <label for="form-email-input">Email (enter to look up your account)</label>
+              <input type="email" id="form-email-input" placeholder="you@example.com" autocomplete="email">
+              <div class="field-error" id="form-email-error">Please enter a valid email address</div>
+              <div class="email-lookup-status" id="form-email-lookup-status"></div>
+            </div>
+            <hr class="divider" style="margin-bottom: 1.5rem;">
+          </div>
+
           <div id="checkout-form-container"></div>
           <div class="error-msg" id="error-msg-form"></div>
         </div>
@@ -1257,6 +1277,9 @@
         if (selectedMode === "form") {
           label.textContent = "Powered by Stripe Checkout Form (ui_mode: form)";
           badge.textContent = "Checkout Form Demo";
+        } else if (selectedMode === "form-lookup") {
+          label.textContent = "Powered by Stripe Checkout Form + Customer Lookup";
+          badge.textContent = "Form + Lookup Demo";
         } else if (selectedMode === "elements-lookup") {
           label.textContent = "Powered by Stripe Elements + Customer Lookup";
           badge.textContent = "Customer Lookup Demo";
@@ -1565,7 +1588,10 @@
       });
     }
 
-    async function initCheckoutForm(publishableKey) {
+    let formLookupEnabled = false;
+
+    async function initCheckoutForm(publishableKey, enableLookup) {
+      formLookupEnabled = !!enableLookup;
       stripe = Stripe(publishableKey, {
         betas: ["custom_checkout_payment_form_1"],
       });
@@ -1577,6 +1603,7 @@
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
+      currentSessionId = data.sessionId;
 
       const {rules, ...formAppearance} = APPEARANCE;
       checkout = stripe.initCheckoutFormSdk({
@@ -1606,7 +1633,154 @@
 
       form.mount("#checkout-form-container");
 
+      const lookupSection = document.getElementById("form-lookup-section");
+      const titleEl = document.getElementById("form-phase-title");
+      const descEl = document.getElementById("form-phase-desc");
+
+      if (formLookupEnabled) {
+        lookupSection.style.display = "block";
+        titleEl.textContent = "Checkout Form + Customer Lookup";
+        descEl.textContent = "Enter your email below to check for an existing account with saved payment methods, then complete checkout via the form.";
+        setupFormEmailLookup();
+      } else {
+        lookupSection.style.display = "none";
+        titleEl.textContent = "Checkout Form";
+        descEl.textContent = "Complete checkout powered by a single Stripe form element with built-in payments, billing, shipping, tax, and express wallets.";
+      }
+
       showPhase("checkout-form");
+    }
+
+    function setupFormEmailLookup() {
+      const emailInput = document.getElementById("form-email-input");
+      const emailError = document.getElementById("form-email-error");
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      function validate() {
+        const val = emailInput.value.trim();
+        if (val && !emailRegex.test(val)) {
+          emailInput.classList.add("invalid");
+          emailError.classList.add("visible");
+          return false;
+        }
+        emailInput.classList.remove("invalid");
+        emailError.classList.remove("visible");
+        return true;
+      }
+
+      function hideStatus() {
+        const el = document.getElementById("form-email-lookup-status");
+        if (el) {
+          el.classList.remove("visible", "found");
+          el.textContent = "";
+        }
+      }
+
+      function showStatus(msg, isFound) {
+        const el = document.getElementById("form-email-lookup-status");
+        if (el) {
+          el.textContent = msg;
+          el.classList.add("visible");
+          el.classList.toggle("found", !!isFound);
+        }
+      }
+
+      emailInput.addEventListener("input", () => {
+        if (emailInput.classList.contains("invalid")) validate();
+        hideStatus();
+      });
+
+      emailInput.addEventListener("blur", async () => {
+        if (!validate()) return;
+        const email = emailInput.value.trim();
+        if (!emailRegex.test(email)) return;
+
+        showStatus("Looking up account...");
+
+        try {
+          const res = await fetch("/lookup-customer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          const data = await res.json();
+
+          if (!data.found) {
+            showStatus("No existing account found. Continue below.");
+            return;
+          }
+
+          showStatus("Existing account found.", true);
+          showFormCustomerPopup(data.customer);
+        } catch (err) {
+          if (DEBUG) console.log("[debug] form lookup error:", err);
+          hideStatus();
+        }
+      });
+    }
+
+    function showFormCustomerPopup(customer) {
+      document.getElementById("popup-customer-name").textContent = customer.name || "Customer";
+      document.getElementById("popup-customer-email").textContent = customer.email;
+      const savedText = customer.savedPaymentMethods > 0
+        ? `${customer.savedPaymentMethods} saved payment method${customer.savedPaymentMethods > 1 ? "s" : ""}`
+        : "No saved payment methods";
+      document.getElementById("popup-customer-saved").textContent = savedText;
+
+      const popup = document.getElementById("customer-popup");
+      popup.classList.add("visible");
+
+      const confirmBtn = document.getElementById("popup-confirm");
+      const cancelBtn = document.getElementById("popup-cancel");
+
+      const cleanup = () => {
+        popup.classList.remove("visible");
+        confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+        cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+      };
+
+      document.getElementById("popup-confirm").addEventListener("click", async () => {
+        const btn = document.getElementById("popup-confirm");
+        btn.textContent = "Attaching...";
+        btn.disabled = true;
+
+        try {
+          const result = await actions.runServerUpdate(async () => {
+            await fetch("/update-checkout-customer", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                sessionId: currentSessionId,
+                customerId: customer.id,
+              }),
+            });
+          });
+
+          if (result.type === "success") {
+            updateFormSummary(result.session);
+            const statusEl = document.getElementById("form-email-lookup-status");
+            if (statusEl) {
+              statusEl.textContent = `Signed in as ${customer.name || customer.email}. Saved payment methods loaded.`;
+              statusEl.classList.add("visible", "found");
+            }
+          }
+        } catch (err) {
+          if (DEBUG) console.log("[debug] form attach customer error:", err);
+          showError("error-msg-form", "Failed to attach customer. Please try again.");
+        }
+
+        cleanup();
+      });
+
+      document.getElementById("popup-cancel").addEventListener("click", () => {
+        cleanup();
+        document.getElementById("form-email-input").focus();
+        const statusEl = document.getElementById("form-email-lookup-status");
+        if (statusEl) {
+          statusEl.classList.remove("visible", "found");
+          statusEl.textContent = "";
+        }
+      });
     }
 
     function updateFormSummary(session) {
@@ -1650,7 +1824,9 @@
         const { publishableKey } = await configRes.json();
 
         if (selectedMode === "form") {
-          await initCheckoutForm(publishableKey);
+          await initCheckoutForm(publishableKey, false);
+        } else if (selectedMode === "form-lookup") {
+          await initCheckoutForm(publishableKey, true);
         } else if (selectedMode === "elements-lookup") {
           await initElementsCheckout(publishableKey, true);
         } else {

@@ -69,7 +69,7 @@ app.post("/create-checkout-form-session", async (req, res) => {
       }
     );
 
-    res.json({ clientSecret: session.client_secret });
+    res.json({ clientSecret: session.client_secret, sessionId: session.id });
   } catch (err) {
     console.error("Checkout Form session creation failed:", err.message);
     res.status(400).json({ error: err.message });
