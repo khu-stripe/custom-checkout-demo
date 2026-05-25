@@ -176,7 +176,10 @@
     }
 
     if (sessionId) {
-      fetch(`/session-status?session_id=${sessionId}`)
+      const storedName = sessionStorage.getItem("checkout_name") || "";
+      if (storedName) sessionStorage.removeItem("checkout_name");
+      const nameParam = storedName ? `&customer_name=${encodeURIComponent(storedName)}` : "";
+      fetch(`/session-status?session_id=${sessionId}${nameParam}`)
         .then((r) => r.json())
         .then((data) => {
           if (data.error) {

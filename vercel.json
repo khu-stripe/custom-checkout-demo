@@ -5,6 +5,7 @@
   "rewrites": [
     { "source": "/config", "destination": "/api/config" },
     { "source": "/create-checkout-session", "destination": "/api/create-checkout-session" },
+    { "source": "/create-checkout-form-session", "destination": "/api/create-checkout-form-session" },
     { "source": "/session-status", "destination": "/api/session-status" }
   ]
 }

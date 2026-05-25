@@ -418,6 +418,134 @@
       letter-spacing: 0.04em;
     }
 
+    /* --- Integration mode selector --- */
+    .mode-selector {
+      margin-bottom: 1.5rem;
+    }
+
+    .mode-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 0.5rem;
+      user-select: none;
+    }
+
+    .mode-option:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .mode-option.selected {
+      border-color: var(--violet-bright);
+      background: rgba(108, 60, 224, 0.08);
+    }
+
+    .mode-option input[type="radio"] { display: none; }
+
+    .mode-radio {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      margin-top: 2px;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+
+    .mode-option.selected .mode-radio {
+      border-color: var(--violet-bright);
+    }
+
+    .mode-option.selected .mode-radio::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--violet-bright);
+    }
+
+    .mode-info { flex: 1; }
+
+    .mode-title {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 0.2rem;
+    }
+
+    .mode-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .mode-badge {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .mode-badge.current {
+      background: rgba(108, 60, 224, 0.15);
+      color: var(--violet-glow);
+    }
+
+    .mode-badge.new {
+      background: rgba(244, 197, 66, 0.15);
+      color: var(--gold);
+    }
+
+    /* --- Phase 3: Checkout form --- */
+    .checkout-form-layout {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      .checkout-form-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .checkout-form-layout .order-summary { order: -1; }
+    }
+
+    .checkout-form-main {
+      max-width: 560px;
+    }
+
+    .checkout-form-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .checkout-form-header .section-title {
+      margin-bottom: 0.5rem;
+    }
+
+    .checkout-form-header p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    #checkout-form-container {
+      width: 100%;
+      min-height: 400px;
+    }
+
     .error-msg {
       display: none;
       margin-top: 1rem;
@@ -691,7 +819,7 @@
   <div class="container">
     <header class="header">
       <div class="logo">lumi<span>nary</span></div>
-      <div class="badge">Custom Checkout Demo</div>
+      <div class="badge" id="header-badge">Custom Checkout Demo</div>
     </header>
 
     <!-- PHASE 1: Product + country selection -->
@@ -751,18 +879,42 @@
             Automatic tax and tax ID collection are enabled.
           </div>
 
+          <hr class="divider">
+
+          <label class="field-label">Integration Mode</label>
+          <div class="mode-selector">
+            <label class="mode-option selected" data-mode="elements">
+              <input type="radio" name="integration-mode" value="elements" checked>
+              <span class="mode-radio"></span>
+              <span class="mode-info">
+                <span class="mode-title">Custom Checkout (Elements)</span>
+                <span class="mode-desc">Compose individual Stripe Elements for maximum control over layout and UX</span>
+              </span>
+              <span class="mode-badge current">Current</span>
+            </label>
+            <label class="mode-option" data-mode="form">
+              <input type="radio" name="integration-mode" value="form">
+              <span class="mode-radio"></span>
+              <span class="mode-info">
+                <span class="mode-title">Checkout Form</span>
+                <span class="mode-desc">End-to-end checkout in a single embedded form: payments, email, billing, shipping, tax, and express wallets built in</span>
+              </span>
+              <span class="mode-badge new">New</span>
+            </label>
+          </div>
+
           <button class="btn-primary" id="start-checkout-btn">
             <span class="btn-text">Continue to Checkout</span>
             <span class="spinner"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" opacity="0.3"/><path d="M12 2v4" stroke="currentColor"/></svg></span>
           </button>
 
-          <div class="powered-by">Powered by Stripe Elements + Checkout Sessions</div>
+          <div class="powered-by" id="powered-by-label">Powered by Stripe Elements + Checkout Sessions</div>
           <div class="error-msg" id="error-msg-select"></div>
         </div>
       </div>
     </div>
 
-    <!-- PHASE 2: Embedded checkout form -->
+    <!-- PHASE 2: Custom Checkout (Elements) -->
     <div class="phase" id="phase-checkout">
       <a href="#" class="back-link" id="back-link">
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
@@ -777,6 +929,11 @@
             <label for="email-input">Email</label>
             <input type="email" id="email-input" placeholder="you@example.com" autocomplete="email" required>
             <div class="field-error" id="email-error">Please enter a valid email address</div>
+          </div>
+
+          <div class="form-group">
+            <label for="name-input">Full name</label>
+            <input type="text" id="name-input" placeholder="Jane Smith" autocomplete="name">
           </div>
 
           <div id="express-checkout-element"></div>
@@ -834,6 +991,54 @@
         </div>
       </div>
     </div>
+
+    <!-- PHASE 3: Checkout Form (single form element) -->
+    <div class="phase" id="phase-checkout-form">
+      <a href="#" class="back-link" id="back-link-form">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to plan
+      </a>
+
+      <div class="checkout-form-layout">
+        <div class="checkout-form-main animate-in">
+          <div class="checkout-form-header">
+            <h2 class="section-title">Checkout Form</h2>
+            <p>Complete checkout powered by a single Stripe form element with built-in payments, billing, shipping, tax, and express wallets.</p>
+          </div>
+          <div id="checkout-form-container"></div>
+          <div class="error-msg" id="error-msg-form"></div>
+        </div>
+
+        <div class="order-summary animate-in-delay">
+          <div class="card">
+            <div class="plan-label">Order Summary</div>
+            <div class="plan-name">Luminary Membership</div>
+
+            <hr class="divider">
+
+            <div class="summary-line">
+              <span class="label">Subscription</span>
+              <span class="value" id="form-summary-subtotal">$299.00</span>
+            </div>
+            <div class="summary-line" id="form-summary-tax-row" style="display: none;">
+              <span class="label">Tax</span>
+              <span class="value" id="form-summary-tax">$0.00</span>
+            </div>
+            <div class="summary-line total">
+              <span class="label">Total due today</span>
+              <span class="value" id="form-summary-total">$299.00</span>
+            </div>
+
+            <div style="margin-top: 1rem;">
+              <div class="summary-line" style="opacity: 0.7;">
+                <span class="label">Then</span>
+                <span class="value" id="form-summary-recurring">$299.00/mo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -863,6 +1068,25 @@
       });
 
     let stripe, checkout, actions;
+    let selectedMode = "elements";
+    const DEBUG = new URLSearchParams(window.location.search).has("debug");
+
+    document.querySelectorAll(".mode-option").forEach((opt) => {
+      opt.addEventListener("click", () => {
+        document.querySelectorAll(".mode-option").forEach((o) => o.classList.remove("selected"));
+        opt.classList.add("selected");
+        selectedMode = opt.dataset.mode;
+        const label = document.getElementById("powered-by-label");
+        const badge = document.getElementById("header-badge");
+        if (selectedMode === "form") {
+          label.textContent = "Powered by Stripe Checkout Form (ui_mode: form)";
+          badge.textContent = "Checkout Form Demo";
+        } else {
+          label.textContent = "Powered by Stripe Elements + Checkout Sessions";
+          badge.textContent = "Custom Checkout Demo";
+        }
+      });
+    });
 
     function showError(id, msg) {
       const el = document.getElementById(id);
@@ -908,6 +1132,206 @@
       }
     }
 
+    const APPEARANCE = {
+      theme: "night",
+      variables: {
+        colorPrimary: "#a78bfa",
+        colorBackground: "#1e1037",
+        colorText: "#faf7f2",
+        colorDanger: "#fca5a5",
+        fontFamily: "Outfit, sans-serif",
+        borderRadius: "12px",
+        spacingUnit: "4px",
+      },
+      rules: {
+        ".Input": {
+          backgroundColor: "rgba(255, 255, 255, 0.04)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+        },
+        ".Input:focus": {
+          borderColor: "#6c3ce0",
+          boxShadow: "0 0 0 3px rgba(108, 60, 224, 0.15)",
+        },
+        ".Label": {
+          fontSize: "0.78rem",
+          fontWeight: "500",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "#b8a9d4",
+        },
+        ".Tab": {
+          backgroundColor: "rgba(255, 255, 255, 0.04)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+        },
+        ".Tab--selected": {
+          backgroundColor: "rgba(108, 60, 224, 0.15)",
+          borderColor: "#6c3ce0",
+        },
+      },
+    };
+
+    const CUSTOM_FONTS = [
+      { cssSrc: "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600" },
+    ];
+
+    async function initElementsCheckout(publishableKey) {
+      stripe = Stripe(publishableKey, {
+        betas: ["custom_checkout_tax_id_1"],
+      });
+
+      const res = await fetch("/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ countryCode: countrySelect.value || null }),
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      checkout = stripe.initCheckoutElementsSdk({
+        clientSecret: data.clientSecret,
+        elementsOptions: {
+          appearance: APPEARANCE,
+          fonts: CUSTOM_FONTS,
+        },
+        adaptivePricing: { allowed: true },
+      });
+
+      const loadResult = await checkout.loadActions();
+      actions = loadResult.actions;
+
+      const expressCheckout = checkout.createExpressCheckoutElement({
+        buttonType: { applePay: "subscribe", googlePay: "subscribe" },
+        paymentMethods: { applePay: "always", googlePay: "always" },
+      });
+      expressCheckout.mount("#express-checkout-element");
+      expressCheckout.on("ready", ({ availablePaymentMethods }) => {
+        if (availablePaymentMethods) {
+          document.getElementById("or-divider").style.display = "flex";
+        }
+      });
+      expressCheckout.on("confirm", async () => {
+        const name = document.getElementById("name-input").value.trim();
+        if (name) sessionStorage.setItem("checkout_name", name);
+        if (DEBUG) console.log("[debug] express confirm - name stored:", name);
+        const { error } = await actions.confirm();
+        if (error) showError("error-msg-pay", error.message);
+      });
+
+      const currencySelector = checkout.createCurrencySelectorElement();
+      currencySelector.mount("#currency-selector-element");
+
+      const paymentElement = checkout.createPaymentElement({
+        fields: { billingDetails: "auto" },
+      });
+      paymentElement.mount("#payment-element");
+
+      const taxIdElement = checkout.createTaxIdElement({ visibility: "always" });
+      taxIdElement.mount("#tax-id-element");
+
+      const taxIdContainer = document.getElementById("tax-id-element");
+      document.getElementById("business-toggle").addEventListener("change", (e) => {
+        taxIdContainer.style.display = e.target.checked ? "block" : "none";
+      });
+
+      const session = actions.getSession();
+      updateSummary(session);
+
+      checkout.on("change", (updatedSession) => {
+        updateSummary(updatedSession);
+        document.getElementById("pay-btn").disabled = !updatedSession.canConfirm;
+      });
+
+      document.getElementById("pay-btn").disabled = !session.canConfirm;
+
+      const emailInput = document.getElementById("email-input");
+      const emailError = document.getElementById("email-error");
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      function validateEmail() {
+        const val = emailInput.value.trim();
+        if (val && !emailRegex.test(val)) {
+          emailInput.classList.add("invalid");
+          emailError.classList.add("visible");
+          return false;
+        }
+        emailInput.classList.remove("invalid");
+        emailError.classList.remove("visible");
+        return true;
+      }
+
+      emailInput.addEventListener("blur", validateEmail);
+      emailInput.addEventListener("input", (e) => {
+        const val = e.target.value.trim();
+        if (emailInput.classList.contains("invalid")) validateEmail();
+        if (emailRegex.test(val)) actions.updateEmail(val);
+      });
+
+      showPhase("checkout");
+    }
+
+    async function initCheckoutForm(publishableKey) {
+      stripe = Stripe(publishableKey, {
+        betas: ["custom_checkout_payment_form_1"],
+      });
+
+      const res = await fetch("/create-checkout-form-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ countryCode: countrySelect.value || null }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      const {rules, ...formAppearance} = APPEARANCE;
+      checkout = stripe.initCheckoutFormSdk({
+        clientSecret: data.clientSecret,
+        appearance: formAppearance,
+        fonts: CUSTOM_FONTS,
+      });
+
+      const loadResult = await checkout.loadActions();
+      if (loadResult.type === "success") {
+        const session = loadResult.actions.getSession();
+        updateFormSummary(session);
+      }
+
+      checkout.on("change", (updatedSession) => {
+        updateFormSummary(updatedSession);
+      });
+
+      const form = checkout.createForm();
+      form.mount("#checkout-form-container");
+
+      showPhase("checkout-form");
+    }
+
+    function updateFormSummary(session) {
+      const subtotalEl = document.getElementById("form-summary-subtotal");
+      const taxEl = document.getElementById("form-summary-tax");
+      const taxRow = document.getElementById("form-summary-tax-row");
+      const totalEl = document.getElementById("form-summary-total");
+      const recurringEl = document.getElementById("form-summary-recurring");
+
+      if (session.total) {
+        subtotalEl.textContent = session.total.subtotal?.amount || "";
+        totalEl.textContent = session.total.total?.amount || "";
+
+        if (session.total.taxExclusive?.minorUnitsAmount > 0 ||
+            session.total.taxInclusive?.minorUnitsAmount > 0) {
+          const taxAmt = session.total.taxExclusive?.amount || session.total.taxInclusive?.amount || "";
+          taxEl.textContent = taxAmt;
+          taxRow.style.display = "flex";
+        } else {
+          taxRow.style.display = "none";
+        }
+      }
+
+      if (session.recurring?.dueNext?.total?.amount) {
+        recurringEl.textContent = session.recurring.dueNext.total.amount + "/mo";
+      }
+    }
+
     // Phase 1: Start checkout
     document.getElementById("start-checkout-btn").addEventListener("click", async () => {
       hideError("error-msg-select");
@@ -921,149 +1345,14 @@
       try {
         const configRes = await fetch("/config");
         const { publishableKey } = await configRes.json();
-        stripe = Stripe(publishableKey, {
-          betas: ["custom_checkout_tax_id_1"],
-        });
 
-        const res = await fetch("/create-checkout-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ countryCode: countrySelect.value || null }),
-        });
-
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-
-        checkout = stripe.initCheckoutElementsSdk({
-          clientSecret: data.clientSecret,
-          elementsOptions: {
-            appearance: {
-              theme: "night",
-              variables: {
-                colorPrimary: "#a78bfa",
-                colorBackground: "#1e1037",
-                colorText: "#faf7f2",
-                colorDanger: "#fca5a5",
-                fontFamily: "Outfit, sans-serif",
-                borderRadius: "12px",
-                spacingUnit: "4px",
-              },
-              rules: {
-                ".Input": {
-                  backgroundColor: "rgba(255, 255, 255, 0.04)",
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
-                },
-                ".Input:focus": {
-                  borderColor: "#6c3ce0",
-                  boxShadow: "0 0 0 3px rgba(108, 60, 224, 0.15)",
-                },
-                ".Label": {
-                  fontSize: "0.78rem",
-                  fontWeight: "500",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: "#b8a9d4",
-                },
-                ".Tab": {
-                  backgroundColor: "rgba(255, 255, 255, 0.04)",
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
-                },
-                ".Tab--selected": {
-                  backgroundColor: "rgba(108, 60, 224, 0.15)",
-                  borderColor: "#6c3ce0",
-                },
-              },
-            },
-            fonts: [
-              { cssSrc: "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600" },
-            ],
-          },
-          adaptivePricing: { allowed: true },
-        });
-
-        const loadResult = await checkout.loadActions();
-        actions = loadResult.actions;
-
-        const expressCheckout = checkout.createExpressCheckoutElement({
-          buttonType: {
-            applePay: "subscribe",
-            googlePay: "subscribe",
-          },
-          paymentMethods: {
-            applePay: "always",
-            googlePay: "always",
-          },
-        });
-        expressCheckout.mount("#express-checkout-element");
-        expressCheckout.on("ready", ({ availablePaymentMethods }) => {
-          if (availablePaymentMethods) {
-            document.getElementById("or-divider").style.display = "flex";
-          }
-        });
-        expressCheckout.on("confirm", async () => {
-          const { error } = await actions.confirm();
-          if (error) {
-            showError("error-msg-pay", error.message);
-          }
-        });
-
-        const currencySelector = checkout.createCurrencySelectorElement();
-        currencySelector.mount("#currency-selector-element");
-
-        const paymentElement = checkout.createPaymentElement({
-          fields: { billingDetails: { name: "auto" } },
-        });
-        paymentElement.mount("#payment-element");
-
-        const taxIdElement = checkout.createTaxIdElement({
-          visibility: "always",
-        });
-        taxIdElement.mount("#tax-id-element");
-
-        const taxIdContainer = document.getElementById("tax-id-element");
-        document.getElementById("business-toggle").addEventListener("change", (e) => {
-          taxIdContainer.style.display = e.target.checked ? "block" : "none";
-        });
-
-        const session = actions.getSession();
-        updateSummary(session);
-
-        checkout.on("change", (updatedSession) => {
-          updateSummary(updatedSession);
-          document.getElementById("pay-btn").disabled = !updatedSession.canConfirm;
-        });
-
-        document.getElementById("pay-btn").disabled = !session.canConfirm;
-
-        const emailInput = document.getElementById("email-input");
-        const emailError = document.getElementById("email-error");
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        function validateEmail() {
-          const val = emailInput.value.trim();
-          if (val && !emailRegex.test(val)) {
-            emailInput.classList.add("invalid");
-            emailError.classList.add("visible");
-            return false;
-          }
-          emailInput.classList.remove("invalid");
-          emailError.classList.remove("visible");
-          return true;
+        if (selectedMode === "form") {
+          await initCheckoutForm(publishableKey);
+        } else {
+          await initElementsCheckout(publishableKey);
         }
 
-        emailInput.addEventListener("blur", validateEmail);
-        emailInput.addEventListener("input", (e) => {
-          const val = e.target.value.trim();
-          if (emailInput.classList.contains("invalid")) {
-            validateEmail();
-          }
-          if (emailRegex.test(val)) {
-            actions.updateEmail(val);
-          }
-        });
-
         overlay.classList.remove("visible");
-        showPhase("checkout");
       } catch (err) {
         overlay.classList.remove("visible");
         showError("error-msg-select", err.message);
@@ -1075,11 +1364,23 @@
     // Phase 2: Confirm payment
     document.getElementById("pay-btn").addEventListener("click", async () => {
       hideError("error-msg-pay");
+      const nameInput = document.getElementById("name-input");
+      const cardholderName = nameInput.value.trim();
+
+      if (!cardholderName) {
+        nameInput.classList.add("invalid");
+        showError("error-msg-pay", "Please enter your full name.");
+        return;
+      }
+      nameInput.classList.remove("invalid");
+
       const btn = document.getElementById("pay-btn");
       btn.classList.add("loading");
       btn.disabled = true;
 
       try {
+        sessionStorage.setItem("checkout_name", cardholderName);
+        if (DEBUG) console.log("[debug] name stored in sessionStorage:", cardholderName);
         const { error } = await actions.confirm();
         if (error) {
           showError("error-msg-pay", error.message);
@@ -1093,8 +1394,16 @@
       }
     });
 
-    // Back button
+    // Back buttons
     document.getElementById("back-link").addEventListener("click", (e) => {
+      e.preventDefault();
+      showPhase("select");
+      const btn = document.getElementById("start-checkout-btn");
+      btn.classList.remove("loading");
+      btn.disabled = false;
+    });
+
+    document.getElementById("back-link-form").addEventListener("click", (e) => {
       e.preventDefault();
       showPhase("select");
       const btn = document.getElementById("start-checkout-btn");

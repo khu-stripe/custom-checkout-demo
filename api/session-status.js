@@ -1,9 +1,9 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2026-03-25.dahlia",
+  apiVersion: "2026-04-22.dahlia",
 });
 
 module.exports = async (req, res) => {
-  const { session_id } = req.query;
+  const { session_id, customer_name } = req.query;
   if (!session_id) {
     return res.status(400).json({ error: "Missing session_id" });
   }
@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
     });
 
     if (session.status === "complete" && session.customer) {
-      const name = session.customer_details?.name;
+      const name = customer_name || session.customer_details?.name;
       const email = session.customer_details?.email;
       if (name || email) {
         await stripe.customers.update(session.customer, {
