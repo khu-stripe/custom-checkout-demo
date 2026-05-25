@@ -1536,10 +1536,11 @@
       document.getElementById("popup-customer-saved").textContent = savedText;
 
       const popup = document.getElementById("customer-popup");
-      popup.classList.add("visible");
-
       const confirmBtn = document.getElementById("popup-confirm");
       const cancelBtn = document.getElementById("popup-cancel");
+      confirmBtn.textContent = "Continue";
+      confirmBtn.disabled = false;
+      popup.classList.add("visible");
 
       const cleanup = () => {
         popup.classList.remove("visible");
@@ -1728,10 +1729,11 @@
       document.getElementById("popup-customer-saved").textContent = savedText;
 
       const popup = document.getElementById("customer-popup");
-      popup.classList.add("visible");
-
       const confirmBtn = document.getElementById("popup-confirm");
       const cancelBtn = document.getElementById("popup-cancel");
+      confirmBtn.textContent = "Continue";
+      confirmBtn.disabled = false;
+      popup.classList.add("visible");
 
       const cleanup = () => {
         popup.classList.remove("visible");
