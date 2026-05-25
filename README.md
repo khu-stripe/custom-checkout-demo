@@ -33,7 +33,7 @@ Session created with `ui_mode: "custom"` (clover API version).
 
 ### Integration Mode: Elements + Customer Lookup
 
-Uses the same Elements setup as above, plus client-side email lookup on blur. When an existing Stripe Customer is found, a confirmation popup appears. On confirmation, `actions.runServerUpdate()` calls the server to attach the customer to the checkout session. The customer's name is prefilled automatically if available. See [Update the customer during checkout](https://docs.stripe.com/payments/checkout/custom-checkout/update-customer-during-checkout).
+Uses the same Elements setup as above, plus client-side email lookup on blur. When an existing Stripe Customer is found, a confirmation popup appears. On confirmation, `actions.runServerUpdate()` calls the server to attach the customer to the checkout session. The customer's name is prefilled automatically if available. See [Update the customer during checkout](https://docs.stripe.com/payments/checkout/update-customer#configure-saved-payment-methods).
 
 ### Integration Mode: Checkout Form
 
