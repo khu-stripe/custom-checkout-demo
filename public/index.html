@@ -1198,6 +1198,11 @@
             <hr class="divider" style="margin-bottom: 1.5rem;">
           </div>
 
+          <div class="form-group">
+            <label for="form-name-input">Full name</label>
+            <input type="text" id="form-name-input" placeholder="Jane Smith" autocomplete="name">
+          </div>
+
           <div id="checkout-form-container"></div>
           <div class="error-msg" id="error-msg-form"></div>
         </div>
@@ -1626,6 +1631,8 @@
       const form = checkout.createForm();
 
       form.on("confirm", async (event) => {
+        const formName = document.getElementById("form-name-input").value.trim();
+        if (formName) sessionStorage.setItem("checkout_name", formName);
         const { error } = await actions.confirm({ formConfirmEvent: event });
         if (error) {
           showError("error-msg-form", error.message);
@@ -1764,6 +1771,10 @@
             if (statusEl) {
               statusEl.textContent = `Signed in as ${customer.name || customer.email}. Saved payment methods loaded.`;
               statusEl.classList.add("visible", "found");
+            }
+            if (customer.name) {
+              const nameInput = document.getElementById("form-name-input");
+              nameInput.value = customer.name;
             }
           }
         } catch (err) {
