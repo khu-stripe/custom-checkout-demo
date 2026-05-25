@@ -1544,6 +1544,11 @@
           if (result.type === "success") {
             updateSummary(result.session);
             showLookupStatus(`Signed in as ${customer.name || customer.email}. Saved payment methods loaded.`, true);
+            if (customer.name) {
+              const nameInput = document.getElementById("name-input");
+              nameInput.value = customer.name;
+              nameInput.classList.remove("invalid");
+            }
           }
         } catch (err) {
           if (DEBUG) console.log("[debug] attach customer error:", err);
