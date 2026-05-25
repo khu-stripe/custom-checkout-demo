@@ -1065,21 +1065,12 @@
               </span>
               <span class="mode-badge new">New</span>
             </label>
-            <label class="mode-option" data-mode="form">
-              <input type="radio" name="integration-mode" value="form">
-              <span class="mode-radio"></span>
-              <span class="mode-info">
-                <span class="mode-title">Checkout Form</span>
-                <span class="mode-desc">End-to-end checkout in a single embedded form: payments, email, billing, shipping, tax, and express wallets built in</span>
-              </span>
-              <span class="mode-badge new">New</span>
-            </label>
             <label class="mode-option" data-mode="form-lookup">
               <input type="radio" name="integration-mode" value="form-lookup">
               <span class="mode-radio"></span>
               <span class="mode-info">
                 <span class="mode-title">Checkout Form + Customer Lookup</span>
-                <span class="mode-desc">Same as Checkout Form, but looks up existing Stripe customers by email before checkout and attaches saved payment methods</span>
+                <span class="mode-desc">End-to-end checkout form with email-based customer lookup to attach saved payment methods mid-checkout</span>
               </span>
               <span class="mode-badge new">New</span>
             </label>
@@ -1279,10 +1270,7 @@
         selectedMode = opt.dataset.mode;
         const label = document.getElementById("powered-by-label");
         const badge = document.getElementById("header-badge");
-        if (selectedMode === "form") {
-          label.textContent = "Powered by Stripe Checkout Form (ui_mode: form)";
-          badge.textContent = "Checkout Form Demo";
-        } else if (selectedMode === "form-lookup") {
+        if (selectedMode === "form-lookup") {
           label.textContent = "Powered by Stripe Checkout Form + Customer Lookup";
           badge.textContent = "Form + Lookup Demo";
         } else if (selectedMode === "elements-lookup") {
@@ -1573,6 +1561,9 @@
           if (result.type === "success") {
             updateSummary(result.session);
             showLookupStatus(`Signed in as ${customer.name || customer.email}. Saved payment methods loaded.`, true);
+            const emailInput = document.getElementById("email-input");
+            emailInput.disabled = true;
+            emailInput.style.opacity = "0.5";
             if (customer.name) {
               const nameInput = document.getElementById("name-input");
               nameInput.value = customer.name;
@@ -1772,6 +1763,9 @@
               statusEl.textContent = `Signed in as ${customer.name || customer.email}. Saved payment methods loaded.`;
               statusEl.classList.add("visible", "found");
             }
+            const emailInput = document.getElementById("form-email-input");
+            emailInput.disabled = true;
+            emailInput.style.opacity = "0.5";
             if (customer.name) {
               const nameInput = document.getElementById("form-name-input");
               nameInput.value = customer.name;
@@ -1836,9 +1830,7 @@
         const configRes = await fetch("/config");
         const { publishableKey } = await configRes.json();
 
-        if (selectedMode === "form") {
-          await initCheckoutForm(publishableKey, false);
-        } else if (selectedMode === "form-lookup") {
+        if (selectedMode === "form-lookup") {
           await initCheckoutForm(publishableKey, true);
         } else if (selectedMode === "elements-lookup") {
           await initElementsCheckout(publishableKey, true);
