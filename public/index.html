@@ -807,6 +807,151 @@
       color: var(--text-muted);
       font-size: 0.95rem;
     }
+
+    /* --- Customer lookup popup --- */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 10, 46, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .popup-overlay.visible { display: flex; }
+
+    .popup-card {
+      background: #1e1037;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem 2.5rem;
+      max-width: 440px;
+      width: 90%;
+      position: relative;
+    }
+
+    .popup-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--violet-glow), transparent);
+      opacity: 0.4;
+    }
+
+    .popup-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--violet-bright), var(--violet-glow));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .popup-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .popup-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .popup-body {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .popup-customer-info {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .popup-customer-info .customer-name {
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .popup-customer-info .customer-email {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .popup-customer-info .customer-saved {
+      font-size: 0.75rem;
+      color: var(--gold);
+      margin-top: 0.5rem;
+    }
+
+    .popup-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .popup-actions button {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s;
+    }
+
+    .popup-actions button:hover {
+      transform: translateY(-1px);
+    }
+
+    .popup-actions button:active { transform: translateY(0); }
+
+    .popup-btn-secondary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .popup-btn-secondary:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      color: var(--text-primary);
+    }
+
+    .popup-btn-primary {
+      background: linear-gradient(135deg, var(--violet-bright), var(--violet-glow));
+      border: none;
+      color: white;
+    }
+
+    .popup-btn-primary:hover {
+      box-shadow: 0 6px 20px rgba(108, 60, 224, 0.35);
+    }
+
+    .email-lookup-status {
+      display: none;
+      font-size: 0.75rem;
+      margin-top: 0.4rem;
+      color: var(--text-muted);
+    }
+
+    .email-lookup-status.visible { display: block; }
+
+    .email-lookup-status.found { color: var(--gold); }
   </style>
 </head>
 <body>
@@ -814,6 +959,25 @@
   <div class="loading-overlay" id="loading-overlay">
     <div class="loading-spinner"></div>
     <p>Preparing your checkout...</p>
+  </div>
+
+  <div class="popup-overlay" id="customer-popup">
+    <div class="popup-card">
+      <div class="popup-icon">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="popup-title">Existing customer found</div>
+      <div class="popup-body">We found an account matching this email address. Would you like to continue with this account to access saved payment methods?</div>
+      <div class="popup-customer-info">
+        <div class="customer-name" id="popup-customer-name"></div>
+        <div class="customer-email" id="popup-customer-email"></div>
+        <div class="customer-saved" id="popup-customer-saved"></div>
+      </div>
+      <div class="popup-actions">
+        <button class="popup-btn-secondary" id="popup-cancel">Change email</button>
+        <button class="popup-btn-primary" id="popup-confirm">Continue</button>
+      </div>
+    </div>
   </div>
 
   <div class="container">
@@ -891,6 +1055,15 @@
                 <span class="mode-desc">Compose individual Stripe Elements for maximum control over layout and UX</span>
               </span>
               <span class="mode-badge current">Current</span>
+            </label>
+            <label class="mode-option" data-mode="elements-lookup">
+              <input type="radio" name="integration-mode" value="elements-lookup">
+              <span class="mode-radio"></span>
+              <span class="mode-info">
+                <span class="mode-title">Elements + Customer Lookup</span>
+                <span class="mode-desc">Same as Elements, but looks up existing Stripe customers by email and attaches saved payment methods mid-checkout</span>
+              </span>
+              <span class="mode-badge new">New</span>
             </label>
             <label class="mode-option" data-mode="form">
               <input type="radio" name="integration-mode" value="form">
@@ -1069,6 +1242,9 @@
 
     let stripe, checkout, actions;
     let selectedMode = "elements";
+    let currentSessionId = null;
+    let customerLookupEnabled = false;
+    let lookupDebounce = null;
     const DEBUG = new URLSearchParams(window.location.search).has("debug");
 
     document.querySelectorAll(".mode-option").forEach((opt) => {
@@ -1081,6 +1257,9 @@
         if (selectedMode === "form") {
           label.textContent = "Powered by Stripe Checkout Form (ui_mode: form)";
           badge.textContent = "Checkout Form Demo";
+        } else if (selectedMode === "elements-lookup") {
+          label.textContent = "Powered by Stripe Elements + Customer Lookup";
+          badge.textContent = "Customer Lookup Demo";
         } else {
           label.textContent = "Powered by Stripe Elements + Checkout Sessions";
           badge.textContent = "Custom Checkout Demo";
@@ -1174,7 +1353,8 @@
       { cssSrc: "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600" },
     ];
 
-    async function initElementsCheckout(publishableKey) {
+    async function initElementsCheckout(publishableKey, enableLookup) {
+      customerLookupEnabled = !!enableLookup;
       stripe = Stripe(publishableKey, {
         betas: ["custom_checkout_tax_id_1"],
       });
@@ -1187,6 +1367,7 @@
 
       const data = await res.json();
       if (data.error) throw new Error(data.error);
+      currentSessionId = data.sessionId;
 
       checkout = stripe.initCheckoutElementsSdk({
         clientSecret: data.clientSecret,
@@ -1260,14 +1441,123 @@
         return true;
       }
 
-      emailInput.addEventListener("blur", validateEmail);
+      emailInput.addEventListener("blur", () => {
+        if (!validateEmail()) return;
+        const val = emailInput.value.trim();
+        if (emailRegex.test(val) && customerLookupEnabled) {
+          lookupCustomerByEmail(val);
+        }
+      });
+
       emailInput.addEventListener("input", (e) => {
         const val = e.target.value.trim();
         if (emailInput.classList.contains("invalid")) validateEmail();
         if (emailRegex.test(val)) actions.updateEmail(val);
+        hideLookupStatus();
       });
 
       showPhase("checkout");
+    }
+
+    function hideLookupStatus() {
+      const el = document.getElementById("email-lookup-status");
+      if (el) {
+        el.classList.remove("visible", "found");
+        el.textContent = "";
+      }
+    }
+
+    function showLookupStatus(msg, isFound) {
+      let el = document.getElementById("email-lookup-status");
+      if (!el) {
+        el = document.createElement("div");
+        el.id = "email-lookup-status";
+        el.className = "email-lookup-status";
+        document.getElementById("email-error").after(el);
+      }
+      el.textContent = msg;
+      el.classList.add("visible");
+      el.classList.toggle("found", !!isFound);
+    }
+
+    async function lookupCustomerByEmail(email) {
+      showLookupStatus("Looking up account...");
+
+      try {
+        const res = await fetch("/lookup-customer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+
+        if (!data.found) {
+          showLookupStatus("No existing account found. Continuing as guest.");
+          return;
+        }
+
+        showLookupStatus("Existing account found.", true);
+        showCustomerPopup(data.customer);
+      } catch (err) {
+        if (DEBUG) console.log("[debug] lookup error:", err);
+        hideLookupStatus();
+      }
+    }
+
+    function showCustomerPopup(customer) {
+      document.getElementById("popup-customer-name").textContent = customer.name || "Customer";
+      document.getElementById("popup-customer-email").textContent = customer.email;
+      const savedText = customer.savedPaymentMethods > 0
+        ? `${customer.savedPaymentMethods} saved payment method${customer.savedPaymentMethods > 1 ? "s" : ""}`
+        : "No saved payment methods";
+      document.getElementById("popup-customer-saved").textContent = savedText;
+
+      const popup = document.getElementById("customer-popup");
+      popup.classList.add("visible");
+
+      const confirmBtn = document.getElementById("popup-confirm");
+      const cancelBtn = document.getElementById("popup-cancel");
+
+      const cleanup = () => {
+        popup.classList.remove("visible");
+        confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+        cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+      };
+
+      document.getElementById("popup-confirm").addEventListener("click", async () => {
+        const btn = document.getElementById("popup-confirm");
+        btn.textContent = "Attaching...";
+        btn.disabled = true;
+
+        try {
+          const result = await actions.runServerUpdate(async () => {
+            await fetch("/update-checkout-customer", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                sessionId: currentSessionId,
+                customerId: customer.id,
+              }),
+            });
+          });
+
+          if (result.type === "success") {
+            updateSummary(result.session);
+            showLookupStatus(`Signed in as ${customer.name || customer.email}. Saved payment methods loaded.`, true);
+          }
+        } catch (err) {
+          if (DEBUG) console.log("[debug] attach customer error:", err);
+          showError("error-msg-pay", "Failed to attach customer. Please try again.");
+        }
+
+        cleanup();
+      });
+
+      document.getElementById("popup-cancel").addEventListener("click", () => {
+        cleanup();
+        document.getElementById("email-input").focus();
+        hideLookupStatus();
+      });
     }
 
     async function initCheckoutForm(publishableKey) {
@@ -1292,8 +1582,8 @@
 
       const loadResult = await checkout.loadActions();
       if (loadResult.type === "success") {
-        const session = loadResult.actions.getSession();
-        updateFormSummary(session);
+        actions = loadResult.actions;
+        updateFormSummary(actions.getSession());
       }
 
       checkout.on("change", (updatedSession) => {
@@ -1301,6 +1591,14 @@
       });
 
       const form = checkout.createForm();
+
+      form.on("confirm", async (event) => {
+        const { error } = await actions.confirm({ formConfirmEvent: event });
+        if (error) {
+          showError("error-msg-form", error.message);
+        }
+      });
+
       form.mount("#checkout-form-container");
 
       showPhase("checkout-form");
@@ -1348,8 +1646,10 @@
 
         if (selectedMode === "form") {
           await initCheckoutForm(publishableKey);
+        } else if (selectedMode === "elements-lookup") {
+          await initElementsCheckout(publishableKey, true);
         } else {
-          await initElementsCheckout(publishableKey);
+          await initElementsCheckout(publishableKey, false);
         }
 
         overlay.classList.remove("visible");

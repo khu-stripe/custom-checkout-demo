@@ -42,7 +42,7 @@ app.post("/create-checkout-session", async (req, res) => {
       return_url: `${origin}/return.html?session_id={CHECKOUT_SESSION_ID}`,
     });
 
-    res.json({ clientSecret: session.client_secret });
+    res.json({ clientSecret: session.client_secret, sessionId: session.id });
   } catch (err) {
     console.error("Checkout Session creation failed:", err.message);
     res.status(400).json({ error: err.message });
@@ -72,6 +72,54 @@ app.post("/create-checkout-form-session", async (req, res) => {
     res.json({ clientSecret: session.client_secret });
   } catch (err) {
     console.error("Checkout Form session creation failed:", err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.post("/lookup-customer", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "Missing email" });
+
+  try {
+    const customers = await stripe.customers.list({ email, limit: 1 });
+    if (customers.data.length === 0) {
+      return res.json({ found: false });
+    }
+
+    const customer = customers.data[0];
+    const paymentMethods = await stripe.paymentMethods.list({
+      customer: customer.id,
+      limit: 10,
+    });
+
+    res.json({
+      found: true,
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        savedPaymentMethods: paymentMethods.data.length,
+      },
+    });
+  } catch (err) {
+    console.error("Customer lookup failed:", err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.post("/update-checkout-customer", async (req, res) => {
+  const { sessionId, customerId } = req.body;
+  if (!sessionId || !customerId) {
+    return res.status(400).json({ error: "Missing sessionId or customerId" });
+  }
+
+  try {
+    const session = await stripe.checkout.sessions.update(sessionId, {
+      customer: customerId,
+    });
+    res.json({ ok: true, sessionId: session.id });
+  } catch (err) {
+    console.error("Update checkout customer failed:", err.message);
     res.status(400).json({ error: err.message });
   }
 });

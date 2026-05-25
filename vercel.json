@@ -6,6 +6,8 @@
     { "source": "/config", "destination": "/api/config" },
     { "source": "/create-checkout-session", "destination": "/api/create-checkout-session" },
     { "source": "/create-checkout-form-session", "destination": "/api/create-checkout-form-session" },
+    { "source": "/lookup-customer", "destination": "/api/lookup-customer" },
+    { "source": "/update-checkout-customer", "destination": "/api/update-checkout-customer" },
     { "source": "/session-status", "destination": "/api/session-status" }
   ]
 }

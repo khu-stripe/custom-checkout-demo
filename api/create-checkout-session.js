@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
       return_url: `${origin}/return.html?session_id={CHECKOUT_SESSION_ID}`,
     });
 
-    res.json({ clientSecret: session.client_secret });
+    res.json({ clientSecret: session.client_secret, sessionId: session.id });
   } catch (err) {
     console.error("Checkout Session creation failed:", err.message);
     res.status(400).json({ error: err.message });
