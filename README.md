@@ -3,10 +3,10 @@
 A subscription checkout page with three integration modes that users can toggle in Phase 1:
 
 1. **Custom Checkout (Elements)** -- Compose individual Stripe Elements (Payment Element, Express Checkout, Currency Selector, Tax ID) for maximum control over layout
-2. **Elements + Customer Lookup** -- Same as Elements, but looks up existing Stripe customers by email and attaches them mid-checkout via `runServerUpdate`, loading saved payment methods and prefilling the name field. The email field is disabled after a customer is attached.
-3. **Checkout Form + Customer Lookup** -- End-to-end checkout in a single Stripe iframe with an email lookup field above the form. Looks up existing customers by email, attaches them mid-checkout to load saved payment methods, and prefills the name. The email field is disabled after attachment.
+2. **Elements + Customer Lookup** -- Same as Elements, but looks up existing Stripe customers by email and attaches them mid-checkout via `runServerUpdate`, prefilling the name field. The email field is disabled after a customer is attached. Saved payment methods are not displayed.
+3. **Checkout Form + Customer Lookup** -- End-to-end checkout in a single Stripe iframe with email and name inputs above the form. Looks up existing customers by email, attaches them mid-checkout, and prefills the name. The email field is disabled after attachment. Saved payment methods are not displayed.
 
-All three modes use the same product (Luminary Membership, $299/mo subscription) with adaptive pricing, automatic tax, and tax ID collection. Both lookup modes share the same popup confirmation flow and reuse the `/lookup-customer` and `/update-checkout-customer` endpoints.
+All three modes use the same product (Luminary Membership, $299/mo subscription) with adaptive pricing, automatic tax, and tax ID collection. Both lookup modes share the same popup confirmation flow and reuse the `/lookup-customer` and `/update-checkout-customer` endpoints. Sessions are created with `saved_payment_method_options.allow_redisplay_filters: []` to prevent saved payment methods from appearing in the checkout UI.
 
 **Live demo**: https://checkout-demo-silk.vercel.app
 
@@ -18,7 +18,6 @@ All three modes use the same product (Luminary Membership, $299/mo subscription)
 | [Checkout Sessions](https://docs.stripe.com/api/checkout/sessions/update) | `POST /v1/checkout/sessions/:id` | Update the session customer mid-checkout (used by Customer Lookup mode) |
 | [Checkout Sessions](https://docs.stripe.com/api/checkout/sessions/retrieve) | `GET /v1/checkout/sessions/:id` | Retrieve session status after payment, with `expand: ["subscription"]` |
 | [Customers](https://docs.stripe.com/api/customers/list) | `GET /v1/customers` | List customers by email for lookup |
-| [Payment Methods](https://docs.stripe.com/api/payment_methods/list) | `GET /v1/payment_methods` | Count saved payment methods for a customer |
 
 ### Integration Mode: Custom Checkout (Elements)
 
@@ -33,7 +32,7 @@ Session created with `ui_mode: "custom"` (clover API version).
 
 ### Integration Mode: Elements + Customer Lookup
 
-Uses the same Elements setup as above, plus client-side email lookup on blur. When an existing Stripe Customer is found, a confirmation popup appears. On confirmation, `actions.runServerUpdate()` calls the server to attach the customer to the checkout session. The customer's name is prefilled automatically if available. See [Update the customer during checkout](https://docs.stripe.com/payments/checkout/update-customer).
+Uses the same Elements setup as above, plus client-side email lookup on blur. When an existing Stripe Customer is found, a confirmation popup appears. On confirmation, `actions.runServerUpdate()` calls the server to attach the customer to the checkout session. The customer's name is prefilled automatically if available. The email field is disabled after attachment to prevent changes. See [Update the customer during checkout](https://docs.stripe.com/payments/checkout/update-customer).
 
 ### Integration Mode: Checkout Form + Customer Lookup
 
