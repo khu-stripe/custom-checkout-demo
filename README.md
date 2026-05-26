@@ -52,12 +52,10 @@ The Checkout Form renders a complete checkout experience in a single iframe, han
 │   ├── update-checkout-customer.js    POST /update-checkout-customer
 │   └── session-status.js               GET  /session-status
 ├── public/
-│   ├── index.html                      Checkout page (source of truth)
+│   ├── index.html                      Checkout page
 │   └── return.html                     Post-payment confirmation page
-├── index.html                          Copy of public/index.html (Vercel static root)
-├── return.html                         Copy of public/return.html (Vercel static root)
 ├── server.js                           Express server for local development
-├── vercel.json                         Vercel routing config
+├── vercel.json                         Vercel routing + outputDirectory config
 └── package.json
 ```
 
