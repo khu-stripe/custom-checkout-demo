@@ -39,6 +39,7 @@ app.post("/create-checkout-session", async (req, res) => {
       automatic_tax: { enabled: true },
       adaptive_pricing: { enabled: true },
       tax_id_collection: { enabled: true },
+      saved_payment_method_options: { allow_redisplay_filters: [] },
       return_url: `${origin}/return.html?session_id={CHECKOUT_SESSION_ID}`,
     });
 
@@ -61,6 +62,7 @@ app.post("/create-checkout-form-session", async (req, res) => {
         automatic_tax: { enabled: true },
         adaptive_pricing: { enabled: true },
         tax_id_collection: { enabled: true },
+        saved_payment_method_options: { allow_redisplay_filters: [] },
         return_url: `${origin}/return.html?session_id={CHECKOUT_SESSION_ID}`,
       },
       {
@@ -87,10 +89,6 @@ app.post("/lookup-customer", async (req, res) => {
     }
 
     const customer = customers.data[0];
-    const paymentMethods = await stripe.paymentMethods.list({
-      customer: customer.id,
-      limit: 10,
-    });
 
     res.json({
       found: true,
@@ -98,7 +96,6 @@ app.post("/lookup-customer", async (req, res) => {
         id: customer.id,
         name: customer.name,
         email: customer.email,
-        savedPaymentMethods: paymentMethods.data.length,
       },
     });
   } catch (err) {

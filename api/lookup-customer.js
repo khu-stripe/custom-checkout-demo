@@ -17,10 +17,6 @@ module.exports = async (req, res) => {
     }
 
     const customer = customers.data[0];
-    const paymentMethods = await stripe.paymentMethods.list({
-      customer: customer.id,
-      limit: 10,
-    });
 
     res.json({
       found: true,
@@ -28,7 +24,6 @@ module.exports = async (req, res) => {
         id: customer.id,
         name: customer.name,
         email: customer.email,
-        savedPaymentMethods: paymentMethods.data.length,
       },
     });
   } catch (err) {

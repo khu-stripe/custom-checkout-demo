@@ -893,12 +893,6 @@
       color: var(--text-muted);
     }
 
-    .popup-customer-info .customer-saved {
-      font-size: 0.75rem;
-      color: var(--gold);
-      margin-top: 0.5rem;
-    }
-
     .popup-actions {
       display: flex;
       gap: 0.75rem;
@@ -967,11 +961,10 @@
         <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </div>
       <div class="popup-title">Existing customer found</div>
-      <div class="popup-body">We found an account matching this email address. Would you like to continue with this account to access saved payment methods?</div>
+      <div class="popup-body">We found an account matching this email address. Would you like to continue with this account?</div>
       <div class="popup-customer-info">
         <div class="customer-name" id="popup-customer-name"></div>
         <div class="customer-email" id="popup-customer-email"></div>
-        <div class="customer-saved" id="popup-customer-saved"></div>
       </div>
       <div class="popup-actions">
         <button class="popup-btn-secondary" id="popup-cancel">Change email</button>
@@ -1523,10 +1516,6 @@
     function showCustomerPopup(customer) {
       document.getElementById("popup-customer-name").textContent = customer.name || "Customer";
       document.getElementById("popup-customer-email").textContent = customer.email;
-      const savedText = customer.savedPaymentMethods > 0
-        ? `${customer.savedPaymentMethods} saved payment method${customer.savedPaymentMethods > 1 ? "s" : ""}`
-        : "No saved payment methods";
-      document.getElementById("popup-customer-saved").textContent = savedText;
 
       const popup = document.getElementById("customer-popup");
       const confirmBtn = document.getElementById("popup-confirm");
@@ -1560,7 +1549,7 @@
 
           if (result.type === "success") {
             updateSummary(result.session);
-            showLookupStatus(`Signed in as ${customer.name || customer.email}. Saved payment methods loaded.`, true);
+            showLookupStatus(`Signed in as ${customer.name || customer.email}.`, true);
             const emailInput = document.getElementById("email-input");
             emailInput.disabled = true;
             emailInput.style.opacity = "0.5";
@@ -1721,10 +1710,6 @@
     function showFormCustomerPopup(customer) {
       document.getElementById("popup-customer-name").textContent = customer.name || "Customer";
       document.getElementById("popup-customer-email").textContent = customer.email;
-      const savedText = customer.savedPaymentMethods > 0
-        ? `${customer.savedPaymentMethods} saved payment method${customer.savedPaymentMethods > 1 ? "s" : ""}`
-        : "No saved payment methods";
-      document.getElementById("popup-customer-saved").textContent = savedText;
 
       const popup = document.getElementById("customer-popup");
       const confirmBtn = document.getElementById("popup-confirm");
@@ -1760,7 +1745,7 @@
             updateFormSummary(result.session);
             const statusEl = document.getElementById("form-email-lookup-status");
             if (statusEl) {
-              statusEl.textContent = `Signed in as ${customer.name || customer.email}. Saved payment methods loaded.`;
+              statusEl.textContent = `Signed in as ${customer.name || customer.email}.`;
               statusEl.classList.add("visible", "found");
             }
             const emailInput = document.getElementById("form-email-input");

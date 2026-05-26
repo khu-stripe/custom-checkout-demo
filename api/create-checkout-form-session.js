@@ -35,6 +35,7 @@ module.exports = async (req, res) => {
         automatic_tax: { enabled: true },
         adaptive_pricing: { enabled: true },
         tax_id_collection: { enabled: true },
+        saved_payment_method_options: { allow_redisplay_filters: [] },
         return_url: `${origin}/return.html?session_id={CHECKOUT_SESSION_ID}`,
       },
       {
