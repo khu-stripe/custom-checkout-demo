@@ -2,7 +2,6 @@
   "framework": null,
   "buildCommand": null,
   "installCommand": "npm install",
-  "outputDirectory": "public",
   "rewrites": [
     { "source": "/config", "destination": "/api/config" },
     { "source": "/create-checkout-session", "destination": "/api/create-checkout-session" },
