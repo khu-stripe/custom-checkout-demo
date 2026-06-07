@@ -4,7 +4,7 @@ A subscription checkout page with three integration modes that users can toggle 
 
 1. **Custom Checkout (Elements)** -- Compose individual Stripe Elements (Payment Element, Express Checkout, Currency Selector, Tax ID) for maximum control over layout. The Payment Element collects the customer name natively using `billingDetails: { name: "always" }` (private feature), so no separate name input is needed.
 2. **Elements + Customer Lookup** -- Same as Elements, but looks up existing Stripe customers by email and attaches them mid-checkout via `runServerUpdate`, prefilling the name field. The email field is disabled after a customer is attached. Saved payment methods are not displayed.
-3. **Checkout Form + Customer Lookup** -- End-to-end checkout in a single Stripe iframe with email and name inputs above the form. Looks up existing customers by email, attaches them mid-checkout, and prefills the name. The email field is disabled after attachment. Saved payment methods are not displayed.
+3. **Checkout Form + Customer Lookup** -- End-to-end checkout in a single Stripe iframe with an email input above the form for customer lookup. The form collects name natively via `name_collection.individual.enabled: true` on the session. Looks up existing customers by email, attaches them mid-checkout, and disables the email field after attachment. Saved payment methods are not displayed.
 
 All three modes use the same product (Luminary Membership, $299/mo subscription) with adaptive pricing, automatic tax, and tax ID collection. Both lookup modes share the same popup confirmation flow and reuse the `/lookup-customer` and `/update-checkout-customer` endpoints. Sessions are created with `saved_payment_method_options.allow_redisplay_filters: []` to prevent saved payment methods from appearing in the checkout UI.
 
@@ -36,9 +36,9 @@ Uses the same Elements setup as above, plus client-side email lookup on blur. Wh
 
 ### Integration Mode: Checkout Form + Customer Lookup
 
-Session created with `ui_mode: "form"` and API version `2026-04-22.preview; custom_checkout_payment_form_preview=v1`.
+Session created with `ui_mode: "form"` (dahlia API version) and `name_collection: { individual: { enabled: true } }` to collect the customer name natively inside the form.
 
-The Checkout Form renders a complete checkout experience in a single iframe, handling payment details, billing address, tax ID, express wallets, and confirmation. An email input and a full name input sit above the form. On email blur, the same customer lookup and popup flow is triggered. After a customer is attached, the email field is disabled and the name is prefilled. See [Checkout Form docs](https://docs.stripe.com/payments/checkout/how-checkout-works?payment-ui=checkout-form) and [Update the customer during checkout](https://docs.stripe.com/payments/checkout/update-customer).
+The Checkout Form renders a complete checkout experience in a single iframe, handling payment details, billing address, name, tax ID, express wallets, and confirmation. An email input sits above the form for customer lookup. On email blur, the same customer lookup and popup flow is triggered. After a customer is attached, the email field is disabled. See [Checkout Form docs](https://docs.stripe.com/payments/checkout/how-checkout-works?payment-ui=checkout-form) and [Update the customer during checkout](https://docs.stripe.com/payments/checkout/update-customer).
 
 ## Project structure
 

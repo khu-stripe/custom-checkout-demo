@@ -13,8 +13,7 @@ module.exports = async (req, res) => {
     "http://localhost:4242";
 
   try {
-    const session = await stripe.checkout.sessions.create(
-      {
+    const session = await stripe.checkout.sessions.create({
         ui_mode: "form",
         mode: "subscription",
         line_items: [
@@ -35,12 +34,9 @@ module.exports = async (req, res) => {
         automatic_tax: { enabled: true },
         adaptive_pricing: { enabled: true },
         tax_id_collection: { enabled: true },
+        name_collection: { individual: { enabled: true } },
         saved_payment_method_options: { allow_redisplay_filters: [] },
         return_url: `${origin}/return.html?session_id={CHECKOUT_SESSION_ID}`,
-      },
-      {
-        apiVersion:
-          "2026-04-22.dahlia; custom_checkout_payment_form_preview=v1",
       }
     );
 

@@ -7,7 +7,6 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { countryCode } = req.body;
   const origin =
     req.headers.origin ||
     `https://${req.headers.host}` ||
@@ -18,20 +17,20 @@ module.exports = async (req, res) => {
       ui_mode: "elements",
       mode: "subscription",
       line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Luminary Membership",
-              description:
-                "Unlimited access to 100+ personal growth programs, daily meditations, and a global community.",
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: "Luminary Membership",
+                description:
+                  "Unlimited access to 100+ personal growth programs, daily meditations, and a global community.",
+              },
+              unit_amount: 29900,
+              recurring: { interval: "month" },
             },
-            unit_amount: 29900,
-            recurring: { interval: "month" },
+            quantity: 1,
           },
-          quantity: 1,
-        },
-      ],
+        ],
       automatic_tax: { enabled: true },
       adaptive_pricing: { enabled: true },
       tax_id_collection: { enabled: true },

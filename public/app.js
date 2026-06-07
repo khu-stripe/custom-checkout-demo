@@ -1,28 +1,3 @@
-const COUNTRY_NAMES = {
-  US: "United States (USD)", GB: "United Kingdom (GBP)",
-  FR: "France (EUR)", DE: "Germany (EUR)", JP: "Japan (JPY)",
-  MY: "Malaysia (MYR)", SG: "Singapore (SGD)", AU: "Australia (AUD)",
-  CA: "Canada (CAD)", BR: "Brazil (BRL)", MX: "Mexico (MXN)",
-  IN: "India (INR)", KR: "South Korea (KRW)", TH: "Thailand (THB)",
-  ID: "Indonesia (IDR)", PH: "Philippines (PHP)", HK: "Hong Kong (HKD)",
-  TW: "Taiwan (TWD)", NZ: "New Zealand (NZD)", SE: "Sweden (SEK)",
-  NO: "Norway (NOK)", DK: "Denmark (DKK)", CH: "Switzerland (CHF)",
-  PL: "Poland (PLN)", CZ: "Czech Republic (CZK)", RO: "Romania (RON)",
-  HU: "Hungary (HUF)", AE: "UAE (AED)", SA: "Saudi Arabia (SAR)",
-  ZA: "South Africa (ZAR)", CL: "Chile (CLP)", CO: "Colombia (COP)",
-  PE: "Peru (PEN)", AR: "Argentina (ARS)",
-};
-
-const countrySelect = document.getElementById("country-select");
-Object.entries(COUNTRY_NAMES)
-  .sort((a, b) => a[1].localeCompare(b[1]))
-  .forEach(([code, name]) => {
-    const opt = document.createElement("option");
-    opt.value = code;
-    opt.textContent = name;
-    countrySelect.appendChild(opt);
-  });
-
 let stripe, checkout, actions;
 let selectedMode = "elements";
 let currentSessionId = null;
@@ -145,7 +120,6 @@ async function initElementsCheckout(publishableKey, enableLookup) {
   const res = await fetch("/create-checkout-session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ countryCode: countrySelect.value || null }),
   });
 
   const data = await res.json();
@@ -308,7 +282,7 @@ function showCustomerPopup(customer) {
 
     try {
       const result = await actions.runServerUpdate(async () => {
-        await fetch("/update-checkout-customer", {
+        const resp = await fetch("/update-checkout-customer", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -316,6 +290,10 @@ function showCustomerPopup(customer) {
             customerId: customer.id,
           }),
         });
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          console.error("[lookup] update-checkout-customer error:", errData);
+        }
       });
 
       if (result.type === "success") {
@@ -324,11 +302,6 @@ function showCustomerPopup(customer) {
         const emailInput = document.getElementById("email-input");
         emailInput.disabled = true;
         emailInput.style.opacity = "0.5";
-        if (customer.name) {
-          const nameInput = document.getElementById("name-input");
-          nameInput.value = customer.name;
-          nameInput.classList.remove("invalid");
-        }
       }
     } catch (err) {
       if (DEBUG) console.log("[debug] attach customer error:", err);
@@ -356,7 +329,6 @@ async function initCheckoutForm(publishableKey, enableLookup) {
   const res = await fetch("/create-checkout-form-session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ countryCode: countrySelect.value || null }),
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error);
@@ -520,10 +492,6 @@ function showFormCustomerPopup(customer) {
         const emailInput = document.getElementById("form-email-input");
         emailInput.disabled = true;
         emailInput.style.opacity = "0.5";
-        if (customer.name) {
-          const nameInput = document.getElementById("form-name-input");
-          nameInput.value = customer.name;
-        }
       }
     } catch (err) {
       if (DEBUG) console.log("[debug] form attach customer error:", err);
