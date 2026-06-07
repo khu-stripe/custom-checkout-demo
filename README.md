@@ -14,14 +14,14 @@ All three modes use the same product (Luminary Membership, $299/mo subscription)
 
 | API | Method | Purpose |
 |---|---|---|
-| [Checkout Sessions](https://docs.stripe.com/api/checkout/sessions/create) | `POST /v1/checkout/sessions` | Create a session with `ui_mode: "custom"` (Elements) or `ui_mode: "form"` (Checkout Form) |
+| [Checkout Sessions](https://docs.stripe.com/api/checkout/sessions/create) | `POST /v1/checkout/sessions` | Create a session with `ui_mode: "elements"` (Elements) or `ui_mode: "form"` (Checkout Form) |
 | [Checkout Sessions](https://docs.stripe.com/api/checkout/sessions/update) | `POST /v1/checkout/sessions/:id` | Update the session customer mid-checkout (used by Customer Lookup mode) |
 | [Checkout Sessions](https://docs.stripe.com/api/checkout/sessions/retrieve) | `GET /v1/checkout/sessions/:id` | Retrieve session status after payment, with `expand: ["subscription"]` |
 | [Customers](https://docs.stripe.com/api/customers/list) | `GET /v1/customers` | List customers by email for lookup |
 
 ### Integration Mode: Custom Checkout (Elements)
 
-Session created with `ui_mode: "custom"` (dahlia API version).
+Session created with `ui_mode: "elements"` (dahlia API version).
 
 | Element | Method | Purpose |
 |---|---|---|
