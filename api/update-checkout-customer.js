@@ -15,6 +15,7 @@ module.exports = async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.update(sessionId, {
       customer: customerId,
+      customer_update: { address: "auto" },
     });
     res.json({ ok: true, sessionId: session.id });
   } catch (err) {

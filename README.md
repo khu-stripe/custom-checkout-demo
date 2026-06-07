@@ -2,7 +2,7 @@
 
 A subscription checkout page with three integration modes that users can toggle in Phase 1:
 
-1. **Custom Checkout (Elements)** -- Compose individual Stripe Elements (Payment Element, Express Checkout, Currency Selector, Tax ID) for maximum control over layout
+1. **Custom Checkout (Elements)** -- Compose individual Stripe Elements (Payment Element, Express Checkout, Currency Selector, Tax ID) for maximum control over layout. The Payment Element collects the customer name natively using `billingDetails: { name: "always" }` (private feature), so no separate name input is needed.
 2. **Elements + Customer Lookup** -- Same as Elements, but looks up existing Stripe customers by email and attaches them mid-checkout via `runServerUpdate`, prefilling the name field. The email field is disabled after a customer is attached. Saved payment methods are not displayed.
 3. **Checkout Form + Customer Lookup** -- End-to-end checkout in a single Stripe iframe with email and name inputs above the form. Looks up existing customers by email, attaches them mid-checkout, and prefills the name. The email field is disabled after attachment. Saved payment methods are not displayed.
 
@@ -21,11 +21,11 @@ All three modes use the same product (Luminary Membership, $299/mo subscription)
 
 ### Integration Mode: Custom Checkout (Elements)
 
-Session created with `ui_mode: "custom"` (clover API version).
+Session created with `ui_mode: "custom"` (dahlia API version).
 
 | Element | Method | Purpose |
 |---|---|---|
-| [Payment Element](https://docs.stripe.com/js/custom_checkout/payment_element) | `checkout.createPaymentElement()` | Card and alternative payment method inputs |
+| [Payment Element](https://docs.stripe.com/js/custom_checkout/payment_element) | `checkout.createPaymentElement()` | Card and alternative payment method inputs. Created with `fields: { billingDetails: { name: "always" } }` to always collect the customer name inside the element (private feature). |
 | [Express Checkout Element](https://docs.stripe.com/js/custom_checkout/express_checkout_element) | `checkout.createExpressCheckoutElement()` | Apple Pay and Google Pay buttons |
 | [Currency Selector Element](https://docs.stripe.com/js/custom_checkout/currency_selector_element) | `checkout.createCurrencySelectorElement()` | Customer currency switching with adaptive pricing |
 | [Tax ID Element](https://docs.stripe.com/js/custom_checkout/tax_id_element) | `checkout.createTaxIdElement()` | Business tax ID input |

@@ -6,6 +6,19 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY, {
 
 const app = express();
 app.use(express.json());
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' https://js.stripe.com; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' https://fonts.gstatic.com; " +
+    "frame-src https://js.stripe.com https://hooks.stripe.com; " +
+    "connect-src 'self' https://api.stripe.com https://*.stripe.com https://*.apple.com https://apple.com; " +
+    "img-src 'self' data: https://*.stripe.com"
+  );
+  next();
+});
 app.use(express.static("public"));
 
 app.get("/config", (req, res) => {
@@ -113,6 +126,7 @@ app.post("/update-checkout-customer", async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.update(sessionId, {
       customer: customerId,
+      customer_update: { address: "auto" },
     });
     res.json({ ok: true, sessionId: session.id });
   } catch (err) {
@@ -122,24 +136,13 @@ app.post("/update-checkout-customer", async (req, res) => {
 });
 
 app.get("/session-status", async (req, res) => {
-  const { session_id, customer_name } = req.query;
+  const { session_id } = req.query;
   if (!session_id) return res.status(400).json({ error: "Missing session_id" });
 
   try {
     const session = await stripe.checkout.sessions.retrieve(session_id, {
       expand: ["subscription"],
     });
-
-    if (session.status === "complete" && session.customer) {
-      const name = customer_name || session.customer_details?.name;
-      const email = session.customer_details?.email;
-      if (name || email) {
-        await stripe.customers.update(session.customer, {
-          ...(name && { name }),
-          ...(email && { email }),
-        });
-      }
-    }
 
     res.json({
       status: session.status,

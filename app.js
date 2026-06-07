@@ -175,9 +175,6 @@ async function initElementsCheckout(publishableKey, enableLookup) {
     }
   });
   expressCheckout.on("confirm", async () => {
-    const name = document.getElementById("name-input").value.trim();
-    if (name) sessionStorage.setItem("checkout_name", name);
-    if (DEBUG) console.log("[debug] express confirm - name stored:", name);
     const { error } = await actions.confirm();
     if (error) showError("error-msg-pay", error.message);
   });
@@ -186,7 +183,7 @@ async function initElementsCheckout(publishableKey, enableLookup) {
   currencySelector.mount("#currency-selector-element");
 
   const paymentElement = checkout.createPaymentElement({
-    fields: { billingDetails: "auto" },
+    fields: { billingDetails: { name: "always" } },
   });
   paymentElement.mount("#payment-element");
 
@@ -385,8 +382,6 @@ async function initCheckoutForm(publishableKey, enableLookup) {
   const form = checkout.createForm();
 
   form.on("confirm", async (event) => {
-    const formName = document.getElementById("form-name-input").value.trim();
-    if (formName) sessionStorage.setItem("checkout_name", formName);
     const { error } = await actions.confirm({ formConfirmEvent: event });
     if (error) {
       showError("error-msg-form", error.message);
@@ -609,23 +604,12 @@ document.getElementById("start-checkout-btn").addEventListener("click", async ()
 // Phase 2: Confirm payment
 document.getElementById("pay-btn").addEventListener("click", async () => {
   hideError("error-msg-pay");
-  const nameInput = document.getElementById("name-input");
-  const cardholderName = nameInput.value.trim();
-
-  if (!cardholderName) {
-    nameInput.classList.add("invalid");
-    showError("error-msg-pay", "Please enter your full name.");
-    return;
-  }
-  nameInput.classList.remove("invalid");
 
   const btn = document.getElementById("pay-btn");
   btn.classList.add("loading");
   btn.disabled = true;
 
   try {
-    sessionStorage.setItem("checkout_name", cardholderName);
-    if (DEBUG) console.log("[debug] name stored in sessionStorage:", cardholderName);
     const { error } = await actions.confirm();
     if (error) {
       showError("error-msg-pay", error.message);

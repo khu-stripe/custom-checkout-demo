@@ -13,9 +13,7 @@ function formatCurrency(amount, currency) {
 }
 
 if (sessionId) {
-  const storedName = sessionStorage.getItem("checkout_name") || "";
-  const statusUrl = `/session-status?session_id=${sessionId}` + (storedName ? `&customer_name=${encodeURIComponent(storedName)}` : "");
-  fetch(statusUrl)
+  fetch(`/session-status?session_id=${sessionId}`)
     .then((r) => r.json())
     .then((data) => {
       if (data.error) {
